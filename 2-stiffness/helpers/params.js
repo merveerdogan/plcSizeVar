@@ -6,7 +6,7 @@ block_num = 1;
 /*===============================================================
           EXPERIMENT MODE CONFIGURATION
 ===============================================================*/
-var debugMode = true;  // Set to false for full experiment run
+var debugMode = false;  // Set to false for full experiment run
 
 if (debugMode) {
     // Debug mode: shorter experiment for testing
