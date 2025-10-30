@@ -9,7 +9,7 @@ EXP-SPECIFIC INSTRUCTION TEXTS
 
 // Welcome text
 var welcomeText = [
-    '<p>Hello! Thank you for volunteering to help out with our study. Please take a moment to adjust your seating so that you can comfortably watch the monitor and use the keyboard. Feel free to dim the lights as well.</p><p>Close the door or do whatever is necessary to <b>minimize disturbance during the experiment</b>. Please also take a moment to silence your phone so that you are not interrupted by any messages mid-experiment. Do <i>not</i> switch to any other tabs or windows until you are complete.</p><p>We will now go over the instructions.  Please <strong>read these carefully </strong>, as you will not be able to complete this experiment without following them precisely.  <br> <br> A "Next" button will appear at the bottom of the screen on each page. This button will be greyed out at the beginning and will be activated after a few seconds (giving you time to read the instructions on each page). Please read everything on each page carefully before clicking on the "Next" button to continue to the next page.</p>'
+    '<p>Hello! Thank you for volunteering to help out with our study. Please take a moment to adjust your seating so that you can comfortably watch the monitor and use the keyboard. Feel free to dim the lights as well.</p><p>Close the door or do whatever is necessary to <b>minimize disturbance during the experiment</b>. Please also take a moment to silence your phone so that you are not interrupted by any messages mid-experiment. Do <i>not</i> switch to any other tabs or windows until you are complete.</p><p>We will now go over the instructions.  Please <strong>read these carefully</strong>, as you will not be able to complete this experiment without following them precisely.  <br> <br> A "Next" button will appear at the bottom of the screen on each page. This button will be greyed out at the beginning and will be activated after a few seconds (giving you time to read the instructions on each page). Please read everything on each page carefully before clicking on the "Next" button to continue to the next page.</p>'
 ];
 
 // Stiffness introduction text
@@ -287,3 +287,4 @@ if (typeof expSpecificParams !== 'undefined' && expSpecificParams.locationShiftE
     // Insert before final instructions
     instructions.splice(instructions.length - 1, 0, locationShiftPlcDisplay);
 }
+
