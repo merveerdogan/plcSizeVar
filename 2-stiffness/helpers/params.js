@@ -34,7 +34,7 @@ var text_color = 'white';
 /*===============================================================
           EXPERIMENT-SPECIFIC PARAMETERS & FUNCTIONS
 ===============================================================*/
-let estTotalRunTime = 3;
+let estTotalRunTime = 7;
 let exp_compensation = "$" + (estTotalRunTime * .14).toFixed(2).toString();
 let completion_code = 'C17FAMG9';
 let study_title = 'Waving Clothes'
