@@ -1,20 +1,4 @@
-//this file adds plugins from possible folders
-var loc = window.location.pathname, //get current directory
-    foldernames = loc.split('/'); //get folder name (mac)
-if (foldernames == 'undefined') { //pc
-    foldernames = src.split('\\');
-}
-//check the location from one folder name  
-for (f = 0; f < foldernames.length; f++) {
-    if (foldernames[f] == 'Users') { //local
-        //if the file is in merve's local folder, this retracts plugins from the local folder
-        // root = "/Users/merve/OneDrive - Yale University/JS_Experiments/jspsych/plugins/"
-        root = "/Users/merve/OneDrive - Yale University/Projects/Studies/99-jspsych/plugins/"
-    } else if (foldernames[f] == 'ME') { //online 
-        //if the file is in the server, this retracts plugins from the server folder
-        root = "/ME/jspsych/plugins/"
-    }
-}
+root = 'https://perceptionexperiments.net/ME/jspsych/plugins/'
 
 
 //Modified plugins
