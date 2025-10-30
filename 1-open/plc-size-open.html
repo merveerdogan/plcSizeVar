@@ -1,0 +1,176 @@
+<!--
+Merve Erdogan
+Point-light cloth - Size Variant - 10.09.2025
+//**********************************//
+    Experiment details
+    Size Variant
+//**********************************//
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Yale Psychology Experiment</title>
+    <script src='https://perceptionexperiments.net/ME/jspsych/jspsych.js'></script>
+    <link href="https://perceptionexperiments.net/ME/jspsych/css/jspsych.css" rel="stylesheet" type="text/css">
+
+    <!--Special JS files-->
+    <script src="helpers/cloth_processor_plugin.js"></script>
+    <script defer src="helpers/import_jspsych_plugins.js"></script>
+    <script defer src="helpers/display_creator.js"></script>
+
+
+</head>
+
+<body style="background-color:black;">
+    <script src="stimuli/wind_m1_s00078125.json"></script>
+    <script src="helpers/params.js"></script>
+    <script src="helpers/functions.js"></script>
+    <script src="helpers/instructions.js"></script>
+    <script>
+
+        fullscreenActive = false;
+        timeline = [];
+        var experiment_start_time = new Date();
+
+        /*
+        ===============================================================
+        INTRO & INSTRUCTION PROCEDURE
+        ===============================================================
+        */
+        //intro variables are defined in the function.js file
+        if (runIntro == true) {
+            timeline.push(check_device, consent, survey, enter_fullscreen)
+        }
+
+
+        //instruction variables are defined in the instructions_xxx.js file
+        if (runInstr == true) {
+            timeline.push(instr_start, cursor_off);
+        }
+
+        thisCloth = wind_m1_s00078125;
+        thisClothType = getVariableName(thisCloth);
+        timeline.push({
+            type: 'clothProcessor',
+            dot_pos: thisCloth,
+            clothType: thisClothType,
+            fps: expSpecificParams.fps,
+            gridX: expSpecificParams.gridX,
+            gridY: expSpecificParams.gridY,
+            conversionFactor: 1,
+            pixelsPerDegree: expSpecificParams.pixelsPerDegree,
+        });
+        /*
+        ===============================================================
+                                TESTING PROCEDURE
+        ===============================================================
+        */
+        timeline.push(cursor_off)
+
+        //plc_display is a separate plugin as a js file
+        // Example with frame-by-frame random scaling (default mode)
+        var trial = {
+            type: 'displayCreator',
+            clothData: function () {
+                // Get the processed cloth data for this specific cloth
+                var clothData = jsPsych.data.get().filter({ trial_type: 'clothProcessor' }).values();
+                return clothData[0]; // Return the processed data for this stiffness level
+            },
+            speedRate: function () {
+                return 1;
+            },
+            gridX: expSpecificParams.gridX,
+            gridY: expSpecificParams.gridY,
+            cycleNum: expSpecificParams.cycleNum,
+            fps: expSpecificParams.fps,
+            minSizeFactor: expSpecificParams.minSizeFactor,
+            maxSizeFactor: expSpecificParams.maxSizeFactor,
+            sizeChangingScalingFactor: expSpecificParams.sizeChangingScalingFactor,
+            pixelsPerDegree: expSpecificParams.pixelsPerDegree,
+            frameDur: expSpecificParams.frameDur,
+            dotSize: expSpecificParams.dotSize,
+            sizeVariationEnabled: true,
+            locationShiftEnabled: expSpecificParams.locationShiftEnabled,
+            locationShiftX: expSpecificParams.locationShiftX,
+            locationShiftY: expSpecificParams.locationShiftY,
+        }
+
+        var cloth_check_trial = {
+            type: 'video-keyboard-response',
+            stimulus: [
+                'stimuli/video_sizeConstant.mp4'
+            ],
+            choices: jsPsych.NO_KEYS,
+            trial_ends_after_video: true
+        };
+
+        var repeatContent = ['On the next page, we will show another movie with dots on a black background, and then you will be again asked to describe what you saw. Please click on the Space key to start the movie.'];
+
+        var repeat_instr = {
+            type: 'html-keyboard-response',
+            stimulus: standard_instr_style(repeatContent),
+            choices: [' '],
+
+        }
+
+        timeline.push(trial, cursor_on, open_q, cursor_off, repeat_instr, cloth_check_trial, cursor_on, open_q);
+
+
+        /*
+        ===============================================================
+        CLOSING PROCEDURE
+        ===============================================================
+        */
+        //closing variables are in the function file
+        var debreif_qs = {
+            type: 'survey-html-form',
+            html: debriefForm(),
+            required_names: ["attntion_out"],
+            data: { trial_category: 'debreif' },
+            on_start: function () {
+                document.body.style.backgroundColor = 'lightgray'
+                document.documentElement.style.overflow = 'scroll';
+                document.body.style.overflow = 'scroll';
+
+            },
+            on_finish: function (data) {
+
+                if (data.attention < 70) {
+                    participantID = "lowAttention_" + participantID;
+                    include = false;
+                }
+                exp_complete = true;
+                experiment_end_time = new Date();
+                if (!experiment_start_time) {
+                    experiment_start_time = [];
+                }
+                jsPsych.data.addProperties({
+                    gender: data.response.gender,
+                    age: data.response.age,
+                    attentionScore: data.response.attention,
+                    participantID: participantID,
+                    experiment_start_time: experiment_start_time,
+                    experiment_end_time: experiment_end_time,
+                    browser: browserInfo,
+                });
+
+                if (include == true) {
+                    var full = jsPsych.data.get();
+                    saveData('full_' + participantID, full.csv(), save_folder_full);
+                }
+            }
+        }
+        timeline.push(debreif_qs, exit_fullscreen, closing);
+
+
+
+        jsPsych.init({
+            timeline: timeline,
+        });
+    </script>
+</body>
+
+</html>
