@@ -1,0 +1,180 @@
+<!--
+Merve Erdogan
+Point-light cloth - Size Variant
+//**********************************//
+    Experiment details
+    Stiffness
+    Experiment 3 (speed-equated)
+//**********************************//
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Yale Psychology Experiment</title>
+    <script src='https://perceptionexperiments.net/ME/jspsych/jspsych.js'></script>
+    <link href="https://perceptionexperiments.net/ME/jspsych/css/jspsych.css" rel="stylesheet" type="text/css">
+
+    <script defer src="helpers/import_jspsych_plugins.js"></script>
+    <script src="helpers/cloth_processor_plugin.js"></script>
+    <script src="helpers/display_creator.js"></script>
+</head>
+
+<body style="background-color:black;">
+    <script src="stimuli/test/wind_m1_s00078125.json"></script>
+    <script src="stimuli/test/wind_m1_s003125.json"></script>
+    <script src="stimuli/test/wind_m1_s0125.json"></script>
+    <script src="helpers/params.js"></script>
+    <script src="helpers/functions.js"></script>
+    <script src="helpers/instructions.js"></script>
+
+    <script>
+
+        //exp info
+        timeline = [];
+        var experiment_start_time = performance.now();
+
+        /*
+         ===============================================================
+         INTRO & INSTRUCTION PROCEDURE
+         ===============================================================
+         */
+        //intro variables are defined in the function.js file
+        if (runIntro == true) {
+            timeline.push(check_device, consent, survey, enter_fullscreen)
+        }
+
+        // // //instruction variables are defined in the instructions_xxx.js file
+        if (runInstr == true) {
+            // Filter out any undefined instructions
+            const filteredInstructions = instructions.filter(instr => instr !== undefined);
+            timeline.push(...filteredInstructions);
+        }
+
+        // Process all cloths using the cloth processor plugin
+        for (c = 0; c < clothNames.length; c++) {
+            thisClothType = getVariableName(clothNames[c]);
+            timeline.push({
+                type: 'clothProcessor',
+                dot_pos: clothNames[c],
+                clothType: thisClothType,
+                fps: expSpecificParams.fps,
+                gridX: expSpecificParams.gridX,
+                gridY: expSpecificParams.gridY,
+                conversionFactor: 2,
+                pixelsPerDegree: expSpecificParams.pixelsPerDegree,
+            });
+        }
+
+        // Calculate speed rates after all cloth processing is done
+        timeline.push({
+            type: 'html-keyboard-response',
+            stimulus: ' ',
+            choices: jsPsych.NO_KEYS,
+            trial_duration: 200,
+            data: { trial_category: 'speedRateCalculation' },
+            on_finish: function () {
+                // Calculate speed rates from all processed cloth data
+                var allData = jsPsych.data.get();
+                var clothData = allData.filter({ trial_type: 'clothProcessor' }).values();
+
+                var clothSpeeds = clothData.map(data => data.overallSpeed);
+                var meanSpeed = calculateMean(clothSpeeds);
+                var speedRates = clothSpeeds.map(speed => round(meanSpeed / speed));
+
+                window.calculatedClothSpeedRates = speedRates;
+                window.meanSpeedOfAllCloths = meanSpeed;
+                window.clothsInitialSpeeds = clothSpeeds;
+            }
+        });
+
+
+        /*
+        ===============================================================
+                                TESTING PROCEDURE
+        ===============================================================
+        */
+
+        trial_num = 0;
+        timeline.push(cursor_off);
+
+        function pushSingleTrial(thisStiffness) {
+
+            //plc_display is a separate plugin as a js file
+            var trial = {
+                type: 'displayCreator',
+                clothData: function () {
+                    // Get the processed cloth data for this specific cloth
+                    var clothData = jsPsych.data.get().filter({ trial_type: 'clothProcessor' }).values();
+                    return clothData[thisStiffness]; // Return the processed data for this stiffness level
+                },
+                speedRate: function () {
+                    return window.calculatedClothSpeedRates[thisStiffness];
+                },
+                equalizeSpeed: true,
+                gridX: expSpecificParams.gridX,
+                gridY: expSpecificParams.gridY,
+                cycleNum: expSpecificParams.cycleNum,
+                fps: expSpecificParams.fps,
+                minSizeFactor: expSpecificParams.minSizeFactor,
+                maxSizeFactor: expSpecificParams.maxSizeFactor,
+                sizeChangingScalingFactor: expSpecificParams.sizeChangingScalingFactor,
+                pixelsPerDegree: expSpecificParams.pixelsPerDegree,
+                frameDur: expSpecificParams.frameDur,
+                dotSize: expSpecificParams.dotSize,
+                sizeVariationEnabled: true,
+            }
+
+            var test = {
+                type: 'html-slider-response',
+                stimulus: "<div style='display: inline-block; margin: 0 auto; color: " + text_color + "; padding: 10px 200px 10px 200px; text-align: left'>How stiff does this cloth seem to you? Higher values indicate higher stiffness.</div>",
+                require_movement: true,
+                labels: ["1", "100"],
+                min: 1,
+                max: 100,
+                data: { trial_category: 'test' },
+                on_finish(data) {
+                    var allData = jsPsych.data.get();
+                    var display_data = allData.filter({ trial_index: data.trial_index - 2 }).values()[0]
+                    trial_num++
+                    data.trial_num = trial_num;
+                    data.stiffnessLevel = thisStiffness;
+                    // Merge all fields from display_data into this slider trial's data
+                    for (var k in display_data) {
+                        if (Object.prototype.hasOwnProperty.call(display_data, k)) {
+                            // do not overwrite slider-specific fields (like responses, rt, etc.)
+                            if (data[k] === undefined) {
+                                data[k] = display_data[k];
+                            }
+                        }
+                    }
+                    console.log(data);
+                }
+            }
+
+            timeline.push(trial, cursor_on, test, cursor_off)
+        }
+
+        for (t = 0; t < conditions.length; t++) {
+            pushSingleTrial(conditions[t]);
+        }
+
+        /*
+        ===============================================================
+        CLOSING PROCEDURE
+        ===============================================================
+        */
+        //closing variables are in the function file
+        timeline.push(cursor_on, finishing, debreif_qs, exit_fullscreen, closing);
+
+
+        jsPsych.init({
+            timeline: timeline,
+        })
+        initFullscreenMonitor();
+    </script>
+</body>
+
+</html>
